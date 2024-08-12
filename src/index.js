@@ -15,22 +15,40 @@ const coordinates = [
   },
   {
     name: "1280 x 720",
-    ready: { x: 1216, y: 612 },
+    ready: { x: 1216, y: 615 },
     continue: { x: 1213, y: 681 },
     popup: { x: 915, y: 440 },
   },
 ];
 
 function printLogo() {
-  console.log("\nWelcome to Dead By Daylight AFK Farming BOT (The Doctor Edition) by");
-  console.log("______ _                               ___           _   _____ _     _ _ _ ");
-  console.log("| ___ \\ |                             |_  |         | | /  __ \\ |   (_) | |");
-  console.log("| |_/ / |__   __ ___   ___   _  __ _    | |_   _ ___| |_| /  \\/ |__  _| | |");
-  console.log("| ___ \\ '_ \\ / _` \\ \\ / / | | |/ _` |   | | | | / __| __| |   | '_ \\| | | |");
-  console.log("| |_/ / | | | (_| |\\ V /| |_| | (_| /\\__/ / |_| \\__ \\ |_| \\__/\\ | | | | | |");
-  console.log("\\____/|_| |_|__,_| \\_/  \\__, |\\__,_\\____/ \\__,_|___/\\__|\\____/_| |_|_|_|_|");
-  console.log("                          __/ |                                            ");
-  console.log("                         |___/                                             ");
+  console.log(
+    "\nWelcome to Dead By Daylight AFK Farming BOT (The Doctor Edition) by"
+  );
+  console.log(
+    "______ _                               ___           _   _____ _     _ _ _ "
+  );
+  console.log(
+    "| ___ \\ |                             |_  |         | | /  __ \\ |   (_) | |"
+  );
+  console.log(
+    "| |_/ / |__   __ ___   ___   _  __ _    | |_   _ ___| |_| /  \\/ |__  _| | |"
+  );
+  console.log(
+    "| ___ \\ '_ \\ / _` \\ \\ / / | | |/ _` |   | | | | / __| __| |   | '_ \\| | | |"
+  );
+  console.log(
+    "| |_/ / | | | (_| |\\ V /| |_| | (_| /\\__/ / |_| \\__ \\ |_| \\__/\\ | | | | | |"
+  );
+  console.log(
+    "\\____/|_| |_|__,_| \\_/  \\__, |\\__,_\\____/ \\__,_|___/\\__|\\____/_| |_|_|_|_|"
+  );
+  console.log(
+    "                          __/ |                                            "
+  );
+  console.log(
+    "                         |___/                                             "
+  );
 }
 
 function intro() {
@@ -40,19 +58,26 @@ function intro() {
     console.log(`${i + 1}. ${res.name}`);
   });
 
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  rl.question("Enter the number corresponding to your resolution choice: ", (answer) => {
-    try {
-      const index = parseInt(answer) - 1;
-      if (index < 0 || index >= coordinates.length) throw new Error("Invalid choice");
-      clickCoordinates = coordinates[index];
-    } catch (e) {
-      console.log("\nInvalid choice!\nDefaulting to 1920 x 1080 resolution.");
-      clickCoordinates = coordinates[0];
-    }
-    rl.close();
-    startBot();
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
   });
+  rl.question(
+    "Enter the number corresponding to your resolution choice: ",
+    (answer) => {
+      try {
+        const index = parseInt(answer) - 1;
+        if (index < 0 || index >= coordinates.length)
+          throw new Error("Invalid choice");
+        clickCoordinates = coordinates[index];
+      } catch (e) {
+        console.log("\nInvalid choice!\nDefaulting to 1920 x 1080 resolution.");
+        clickCoordinates = coordinates[0];
+      }
+      rl.close();
+      startBot();
+    }
+  );
 }
 
 function rightClick(delay) {
@@ -99,8 +124,11 @@ function toggleRunning() {
 
 function moveCameraRandomly(currentX, currentY) {
   const maxMovement = 1400;
-  const newX = currentX + Math.floor(Math.random() * (2 * maxMovement + 1)) - maxMovement;
-  robot.moveMouseSmooth(newX, currentY, 2);
+  const newX =
+    currentX + Math.floor(Math.random() * (2 * maxMovement + 1)) - maxMovement;
+  const newY =
+    currentY + Math.floor(Math.random() * (2 * maxMovement + 1)) - maxMovement;
+  robot.moveMouseSmooth(newX, newY, 2);
 }
 
 async function botActions() {
