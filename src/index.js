@@ -9,7 +9,7 @@ let clickCoordinates = {};
 const coordinates = [
   {
     name: "1920 x 1080",
-    ready: { x: 1823, y: 917 },
+    ready: { x: 1823, y: 920 },
     continue: { x: 1819, y: 1022 },
     popup: { x: 1372, y: 660 },
   },
