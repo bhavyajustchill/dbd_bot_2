@@ -2,9 +2,9 @@ const { GlobalKeyboardListener } = require("node-global-key-listener");
 const robot = require("robotjs");
 const readline = require("readline");
 
-// Global variables
 let running = false;
 let clickCoordinates = {};
+let selectedKillerActions = null;
 
 const coordinates = [
   {
@@ -18,6 +18,80 @@ const coordinates = [
     ready: { x: 1216, y: 615 },
     continue: { x: 1213, y: 681 },
     popup: { x: 915, y: 440 },
+  },
+];
+
+const killerActions = [
+  {
+    name: "The Doctor",
+    actions: async function () {
+      pressReleaseCtrl(3000);
+      for (let i = 0; i < 5; i++) {
+        if (!running) return;
+        rightClick(3000);
+        if (i % 5 === 0) {
+          const { x, y } = robot.getMousePos();
+          moveCameraRandomly(x, y);
+          await sleep(2000);
+          randomDirection();
+        }
+      }
+      for (let i = 0; i < 2; i++) {
+        if (!running) return;
+        const { x, y } = robot.getMousePos();
+        moveCameraRandomly(x, y);
+        await sleep(2000);
+        randomDirection();
+        await leftClicks();
+      }
+      const { x, y } = robot.getMousePos();
+      moveCameraRandomly(x, y);
+      await sleep(2000);
+      randomDirection();
+    },
+  },
+  {
+    name: "The Blight",
+    actions: async function () {
+      for (let i = 0; i < 3; i++) {
+        if (!running) return;
+        const duration = 20000;
+        const startTime = Date.now();
+        const spamRightClick = async () => {
+          while (Date.now() - startTime < duration) {
+            rightClick(100);
+            await sleep(100);
+          }
+        };
+        const moveAndChangeDirection = async () => {
+          while (Date.now() - startTime < duration) {
+            const { x, y } = robot.getMousePos();
+            moveCameraRandomly(x, y);
+            randomDirection();
+            await sleep(300);
+          }
+        };
+        await Promise.all([spamRightClick(), moveAndChangeDirection()]);
+      }
+    },
+  },
+  {
+    name: "The Wraith",
+    actions: async function () {
+      for (let i = 0; i < 5; i++) {
+        if (!running) return;
+        rightClick(3000);
+        const { x, y } = robot.getMousePos();
+        moveCameraRandomly(x, y);
+        await sleep(2000);
+        randomDirection();
+        rightClick(1500);
+        const { x: newX, y: newY } = robot.getMousePos();
+        moveCameraRandomly(newX, newY);
+        await sleep(2000);
+        randomDirection();
+      }
+    },
   },
 ];
 
@@ -35,6 +109,29 @@ function printLogo() {
   console.log("                         |___/                                             ");
 }
 
+function selectKiller(rl) {
+  return new Promise((resolve) => {
+    console.log("\nPlease select your killer:");
+    killerActions.forEach((killer, i) => {
+      console.log(`${i + 1}. ${killer.name}`);
+    });
+
+    rl.question("Enter the number corresponding to your killer choice: ", (answer) => {
+      try {
+        const index = parseInt(answer) - 1;
+        if (index < 0 || index >= killerActions.length) throw new Error("Invalid choice");
+        selectedKillerActions = killerActions[index].actions;
+        console.log(`\nKiller set to: ${killerActions[index].name}`);
+        resolve();
+      } catch (e) {
+        console.log("\nInvalid choice! Defaulting to The Doctor.");
+        selectedKillerActions = killerActions[0].actions;
+        resolve();
+      }
+    });
+  });
+}
+
 function intro() {
   printLogo();
   console.log("\nPlease select your screen resolution:");
@@ -46,17 +143,21 @@ function intro() {
     input: process.stdin,
     output: process.stdout,
   });
+
   rl.question("Enter the number corresponding to your resolution choice: ", (answer) => {
     try {
       const index = parseInt(answer) - 1;
       if (index < 0 || index >= coordinates.length) throw new Error("Invalid choice");
       clickCoordinates = coordinates[index];
     } catch (e) {
-      console.log("\nInvalid choice!\nDefaulting to 1920 x 1080 resolution.");
+      console.log("\nInvalid choice! Defaulting to 1920 x 1080 resolution.");
       clickCoordinates = coordinates[0];
     }
-    rl.close();
-    startBot();
+
+    selectKiller(rl).then(() => {
+      rl.close();
+      startBot();
+    });
   });
 }
 
@@ -103,7 +204,7 @@ function toggleRunning() {
 }
 
 function moveCameraRandomly(currentX, currentY) {
-  const maxMovement = 1400;
+  const maxMovement = 1000;
   const newX = currentX + Math.floor(Math.random() * (2 * maxMovement + 1)) - maxMovement;
   const newY = currentY + Math.floor(Math.random() * (2 * maxMovement + 1)) - maxMovement;
   robot.moveMouseSmooth(newX, newY, 2);
@@ -117,29 +218,11 @@ async function botActions() {
     await sleep(1000);
     click(clickCoordinates.popup.x, clickCoordinates.popup.y);
     await sleep(3000);
-    pressReleaseCtrl(3000);
-    for (let i = 0; i < 5; i++) {
-      if (!running) return;
-      rightClick(3000);
-      if (i % 5 === 0) {
-        const { x, y } = robot.getMousePos();
-        moveCameraRandomly(x, y);
-        await sleep(2000);
-        randomDirection();
-      }
+    if (selectedKillerActions) {
+      await selectedKillerActions();
+    } else {
+      console.log("No killer actions defined. Defaulting to general actions.");
     }
-    for (let i = 0; i < 2; i++) {
-      if (!running) return;
-      const { x, y } = robot.getMousePos();
-      moveCameraRandomly(x, y);
-      await sleep(2000);
-      randomDirection();
-      await leftClicks();
-    }
-    const { x, y } = robot.getMousePos();
-    moveCameraRandomly(x, y);
-    await sleep(2000);
-    randomDirection();
     click(clickCoordinates.ready.x, clickCoordinates.ready.y);
     await sleep(1000);
     click(clickCoordinates.continue.x, clickCoordinates.continue.y);
